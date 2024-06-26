@@ -9,7 +9,7 @@
 
 #include<avr/wdt.h> /* Header for watchdog timers in AVR */
 
-#define DEBUGLOG
+//#define DEBUGLOG
 
 #ifdef DEBUGLOG
 # define LLOG(...) Serial.print(__VA_ARGS__)
@@ -20,21 +20,21 @@
 #endif
 
 const int NO_BTN      = 0;
-const int MUTE_BTN    = 2;    // 3.5 Ohm
-const int SOURCE_BTN  = 3;    // 1K2 
-const int NEXT_BTN    = 4;    // 8K2
-const int PREV_BTN    = 5;    // 11K25
-const int VOLUP_BTN   = 6;    // 16K
-const int VOLDWN_BTN  = 7;    // 24K
+const int MUTE_BTN    = 2;    // pin2 --- 3K5 -- connect to tip
+const int SOURCE_BTN  = 3;    // pin3 --- 1K2 -- connect to tip 
+const int NEXT_BTN    = 4;    // pin4 --- 8K2 -- connect to tip
+const int PREV_BTN    = 5;    // pin5 --- 11K25 -- connect to tip
+const int VOLUP_BTN   = 6;    // pin6 --- 16K -- connect to tip
+const int VOLDWN_BTN  = 7;    // pin7 --- 24K -- connect to tip
 
-const int PIN_SWCTRL = A0;    // [-][+][o][>][<][^] input
+const int PIN_SWCTRL = A0;    // [o] [^] [>] [<] [-] [+] input
 
 const int PIN_LED = LED_BUILTIN;
 
 const unsigned long DEBOUNCER_TIME = 50;
 
 //*****************************************************************************
-// Variables
+// Global variables
 
 int oldButton = NO_BTN;
 int newButton = oldButton;
@@ -48,19 +48,25 @@ void setup() {
   pinMode(PIN_LED, OUTPUT);
 
   pinMode(MUTE_BTN, INPUT);
+  digitalWrite(MUTE_BTN, LOW);
   pinMode(SOURCE_BTN, INPUT);
+  digitalWrite(SOURCE_BTN, LOW);
   pinMode(NEXT_BTN, INPUT);
+  digitalWrite(NEXT_BTN, LOW);
   pinMode(PREV_BTN, INPUT);
+  digitalWrite(PREV_BTN, LOW);
   pinMode(VOLUP_BTN, INPUT);
+  digitalWrite(VOLUP_BTN, LOW);
   pinMode(VOLDWN_BTN, INPUT);
+  digitalWrite(VOLDWN_BTN, LOW);
 
   //DDRD &= B00000011; // D2 a D7 INPUT
   //PORTD &= B00000111; // D3 a D7 LOW
-// para reducir ruido ADC...
+  //
   //DDRC |= B00111110; // A1 a A5 OUTPUT
   //PORTC &= B11000001; // A1 a A5 LOW
 
-  pinMode(A0, INPUT/*_PULLUP*/); // or INPUT
+  pinMode(A0, INPUT);
 
   pinMode(A1, OUTPUT);
   digitalWrite(A1, LOW);
@@ -106,13 +112,14 @@ void loop() {
 
 int decode_analog_btn(int adcValue){
   //LLOGln(adcValue);
-
-  if(adcValue >= 100 && adcValue < 210) return VOLDWN_BTN;
-	if(adcValue >= 210 && adcValue < 322) return VOLUP_BTN;
-	if(adcValue >= 322 && adcValue < 438) return MUTE_BTN;
-	if(adcValue >= 438 && adcValue < 558) return NEXT_BTN;
-  if(adcValue >= 558 && adcValue < 681) return PREV_BTN;
-	if(adcValue >= 681 && adcValue < 800) return SOURCE_BTN; 
+  // Values are got from measurement
+  if(adcValue >= 100 && adcValue < 210) return VOLDWN_BTN;    // 155
+	if(adcValue >= 210 && adcValue < 322) return VOLUP_BTN;     // 264
+	if(adcValue >= 322 && adcValue < 438) return MUTE_BTN;      // 379
+	if(adcValue >= 438 && adcValue < 558) return NEXT_BTN;      // 497
+  if(adcValue >= 558 && adcValue < 681) return PREV_BTN;      // 619
+	if(adcValue >= 681 && adcValue < 800) return SOURCE_BTN;    // 742
+  
   return NO_BTN;
 }
 
@@ -122,10 +129,6 @@ int get_button() {
   
   
   int analogButton = decode_analog_btn(analogRead(PIN_SWCTRL));
-  //int digitalButton = digitalRead(PIN_MODEBTN);
-
-  
-  //digitalWrite(PIN_LED, analogButton * 32 );
   
   if( analogButton == NO_BTN ) {
   
@@ -144,8 +147,6 @@ int get_button() {
 
     } 
   }
-  
-  //digitalWrite(PIN_LED, analogButton * 32 );
   
   return lastButton;
 }
