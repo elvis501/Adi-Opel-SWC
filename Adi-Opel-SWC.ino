@@ -107,10 +107,12 @@ void loop() {
 int decode_analog_btn(int adcValue){
   //LLOGln(adcValue);
 
-  if(adcValue <= 130) return NEXT_BTN;
-	if(adcValue >= 145 && adcValue <= 225) return PREV_BTN;
-	if(adcValue >= 285 && adcValue <= 365) return VOLUP_BTN;
-	if(adcValue >= 525 && adcValue <= 605) return VOLDWN_BTN;  
+  if(adcValue >= 100 && adcValue < 210) return VOLDWN_BTN;
+	if(adcValue >= 210 && adcValue < 322) return VOLUP_BTN;
+	if(adcValue >= 322 && adcValue < 438) return MUTE_BTN;
+	if(adcValue >= 438 && adcValue < 558) return NEXT_BTN;
+  if(adcValue >= 558 && adcValue < 681) return PREV_BTN;
+	if(adcValue >= 681 && adcValue < 800) return SOURCE_BTN; 
   return NO_BTN;
 }
 
